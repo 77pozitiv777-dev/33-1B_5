@@ -75,3 +75,19 @@ class ProductDetailAPIView(APIView):
         self.get_object(uuid).delete()
         cache.delete("product_list")
         return Response(status=204)
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from rest_framework import viewsets
+from .models import Book
+from .serializers import BookSerializer
+
+class BookViewSet(viewsets.ModelViewSet):
+    serializer_class = BookSerializer
+
+    def get_queryset(self):
+        return Book.objects.select_related('category').all()
+
+    @method_decorator(cache_page(60))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
