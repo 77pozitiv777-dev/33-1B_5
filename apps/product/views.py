@@ -91,3 +91,67 @@ class BookViewSet(viewsets.ModelViewSet):
     @method_decorator(cache_page(60))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+from rest_framework import mixins, generics
+from .models import Category, Models
+from .serializers import CategorySerializer, ModelsSerializer
+
+# --- CRUD для Категорий ---
+
+class CategoryListCreateAPIView(mixins.ListModelMixin, 
+        mixins.CreateModelMixin, 
+        generics.GenericAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class CategoryDetailAPIView(mixins.RetrieveModelMixin, 
+        mixins.UpdateModelMixin, 
+        mixins.DestroyModelMixin, 
+        generics.GenericAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+class ModelsListCreateAPIView(mixins.ListModelMixin, 
+        mixins.CreateModelMixin, 
+        generics.GenericAPIView):
+    queryset = Models.objects.all()
+    serializer_class = ModelsSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class ModelsDetailAPIView(mixins.RetrieveModelMixin, 
+        mixins.UpdateModelMixin, 
+        mixins.DestroyModelMixin, 
+        generics.GenericAPIView):
+    queryset = Models.objects.all()
+    serializer_class = ModelsSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
