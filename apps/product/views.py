@@ -155,3 +155,44 @@ class ModelsDetailAPIView(mixins.RetrieveModelMixin,
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+from django.core.mail import send_mail
+from .models import PasswordResetCode
+from .serializers import ForgotPasswordSerializer, ResetPasswordSerializer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class ForgotPasswordView(APIView):
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            if User.objects.filter(email=email).exists():
+                PasswordResetCode.objects.filter(email=email).delete()
+                reset_obj = PasswordResetCode.objects.create(email=email)
+                send_mail(
+                    'Код для сброса пароля',
+                    f'Ваш код подтверждения: {reset_obj.code}',
+                    'noreply@myapp.com',
+                    [email],
+                    fail_silently=False,
+                )
+                return Response({"message": "Код отправлен на почту."}, status=status.HTTP_200_OK)
+            return Response({"error": "Пользователь с такой почтой не найден."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ResetPasswordView(APIView):
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            new_password = serializer.validated_data['new_password']
+            
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+            PasswordResetCode.objects.filter(email=email).delete()
+            
+            return Response({"message": "Пароль успешно изменен."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -115,3 +115,23 @@ class ModelsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Models
         fields = '__all__'
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(min_length=8, write_only=True)
+
+    def validate(self, data):
+        from .models import PasswordResetCode
+        reset_entry = PasswordResetCode.objects.filter(email=data['email'], code=data['code']).first()
+        
+        if not reset_entry:
+            raise serializers.ValidationError("Неверный код или email.")
+        return data
