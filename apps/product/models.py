@@ -118,3 +118,17 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+import random
+class PasswordResetCode(models.Model):
+    email = models.EmailField()
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = str(random.randint(100000, 999999))
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.email} - {self.code}"
