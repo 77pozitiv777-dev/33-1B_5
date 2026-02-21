@@ -103,3 +103,15 @@ class BookSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError("Цена должна быть больше нуля.")
         return value
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+class ModelsSerializer(serializers.ModelSerializer):
+    category_name = serializers.ReadOnlyField(source='category.title')
+
+    class Meta:
+        model = Models
+        fields = '__all__'
